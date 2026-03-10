@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>漾彩美甲預約系統</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    :root {
+      --primary: #f8bbd0;
+      --primary-dark: #f06292;
+      --bg: #fffbfb;
+      --card: #ffffff;
+      --text: #5d4037;
+      --text-muted: #8d6e63;
+      --shadow: 0 10px 30px -5px rgba(240, 98, 146, 0.1);
+      --danger: #ef5350;
+      --success: #66bb6a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(at 0% 0%, rgba(248, 187, 208, 0.2) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(176, 137, 104, 0.1) 0px, transparent 50%);
+      color: var(--text); min-height: 100vh;
+      display: flex; justify-content: center; padding: 40px 20px;
+    }
+    #app { width: 100%; max-width: 650px; }
+    .card { background: var(--card); border-radius: 30px; padding: 40px; box-shadow: var(--shadow); border: 1px solid rgba(248,187,208,0.3); }
+    h1 { font-size: 1.8rem; text-align: center; margin-bottom: 30px; color: var(--primary-dark); }
+    h2 { font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 15px; }
+    .subtitle { text-align: center; color: var(--text-muted); margin-top: -20px; margin-bottom: 30px; font-size: 0.9rem; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 0.9rem; }
+    input, select, textarea {
+      width: 100%; padding: 10px 14px; border-radius: 12px;
+      border: 1px solid #eee; background: #fdfdfd; font-size: 0.95rem; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: #fff; }
+    button, .btn {
+      display: inline-block; padding: 12px 20px; border-radius: 15px; border: none;
+      background: var(--primary-dark); color: white; font-weight: 700;
+      cursor: pointer; transition: 0.3s; font-size: 0.95rem; font-family: inherit; text-align: center;
+    }
+    button:hover:not(:disabled), .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(240,98,146,0.3); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-full { width: 100%; margin-top: 10px; }
+    .btn-ghost { background: transparent; color: var(--primary-dark); border: 1px solid var(--primary); }
+    .btn-sm { padding: 6px 14px; font-size: 0.8rem; border-radius: 10px; }
+    .btn-danger { background: var(--danger); }
+    .btn-success { background: var(--success); }
+
+    .staff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .staff-card {
+      border: 1px solid #eee; border-radius: 20px; padding: 15px; text-align: center;
+      cursor: pointer; transition: 0.2s; background: #fff; position: relative;
+    }
+    .staff-card:hover { border-color: var(--primary); background: #fff9fa; }
+    .staff-card.active { border-color: var(--primary-dark); background: #fff0f3; border-width: 2px; }
+    .staff-avatar { font-size: 2rem; margin-bottom: 8px; }
+    .staff-name { font-weight: 700; font-size: 0.95rem; }
+    .staff-specialty { font-size: 0.75rem; color: var(--text-muted); }
+
+    .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .time-slot {
+      padding: 10px; border: 1px solid #eee; border-radius: 10px; text-align: center;
+      cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+    }
+    .time-slot:hover:not(.booked):not(.unavailable) { background: #fff9fa; border-color: var(--primary); }
+    .time-slot.active { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
+    .time-slot.booked { background: #f5f5f5; color: #bbb; cursor: not-allowed; text-decoration: line-through; border-color: #eee; }
+    .time-slot.unavailable { background: #fafafa; color: #ccc; cursor: not-allowed; border-color: #f0f0f0; }
+
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; flex-wrap: wrap; }
+    .tab { cursor: pointer; padding: 8px 14px; border-radius: 10px; font-weight: 500; font-size: 0.85rem; }
+    .tab.active { background: var(--primary-dark); color: white; }
+
+    .apt-card {
+      padding: 18px; border-radius: 20px; background: #fafafa; border: 1px solid #f0f0f0; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .apt-info { line-height: 1.5; }
+    .apt-date { font-weight: 700; color: var(--primary-dark); }
+    .apt-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; background: #e0e0e0; }
+
+    .admin-staff-item {
+      padding: 15px; border-radius: 16px; background: #fafafa; border: 1px solid #f0f0f0;
+      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .admin-staff-info { display: flex; align-items: center; gap: 12px; }
+    .admin-staff-actions { display: flex; gap: 6px; }
+
+    .schedule-day { padding: 12px; border-radius: 12px; background: #fafafa; border: 1px solid #f0f0f0; margin-bottom: 10px; }
+    .schedule-day-header { font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; color: var(--primary-dark); }
+    .chip-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;
+      border: 1px solid #ddd; background: #fff; transition: 0.2s;
+    }
+    .chip.on { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
+    .chip:hover { border-color: var(--primary); }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center;
+      z-index: 100; padding: 20px;
+    }
+    .modal { background: white; border-radius: 24px; padding: 30px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal h2 { margin-bottom: 20px; }
+
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 999; }
+    .toast { padding: 12px 24px; border-radius: 12px; color: white; font-weight: 500; margin-bottom: 8px; animation: slideDown 0.3s ease; }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+    .empty-msg { text-align: center; color: var(--text-muted); padding: 30px 0; font-size: 0.9rem; }
+    .section-divider { border: none; border-top: 1px solid #f0f0f0; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div id="toast-container" class="toast-container"></div>
+  <div id="app"></div>
+  <div id="modal-root"></div>
+
+  <script>
+    /* ========== DB ========== */
+    var DB = {
+      users: [],
+      staff: [
+        { id: "s1", name: "\u827e\u8389\u7d72 (Alice)", specialty: "\u6cd5\u5f0f\u5149\u7642", avatar: "\ud83c\udf38" },
+        { id: "s2", name: "\u8c9d\u62c9 (Bella)", specialty: "\u624b\u7e6a\u5f69\u7e6a", avatar: "\ud83c\udfa8" },
+        { id: "s3", name: "\u514b\u6d1b\u4f0a (Chloe)", specialty: "\u8db3\u90e8\u6df1\u5c64\u8b77\u7406", avatar: "\ud83d\udec1" },
+        { id: "s4", name: "\u6234\u5b89\u5a1c (Diana)", specialty: "\u7acb\u9ad4\u6d6e\u96d5", avatar: "\u2728" },
+        { id: "s5", name: "\u611b\u746a (Emma)", specialty: "\u6975\u7c21\u7dda\u689d", avatar: "\ud83c\udf3f" },
+        { id: "s6", name: "\u8cbb\u6b50\u5a1c (Fiona)", specialty: "\u7480\u71e6\u6f38\u5c64", avatar: "\ud83d\udc8e" }
+      ],
+      schedules: {},
+      appointments: []
+    };
+
+    try { var saved = localStorage.getItem("nail_db_v2"); if (saved) DB = JSON.parse(saved); } catch(e) {}
+    function saveDB() { try { localStorage.setItem("nail_db_v2", JSON.stringify(DB)); } catch(e) {} }
+    function makeId() { return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).substr(2, 6); }
+    function simpleHash(s) { var h = 0; s = s + "_salt"; for (var i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; } return "pw_" + Math.abs(h).toString(36); }
+
+    var ALL_TIMES = ["11:00","11:30","13:00","13:30","15:00","16:30","19:00","19:30"];
+    var AVATARS = ["\ud83c\udf38","\ud83c\udfa8","\ud83d\udec1","\u2728","\ud83c\udf3f","\ud83d\udc8e","\ud83d\udc85","\u2764\ufe0f","\ud83c\udf1f","\ud83e\uddf4","\ud83c\udf3a","\ud83e\udd8b"];
+    var WEEKDAYS = ["\u9031\u65e5","\u9031\u4e00","\u9031\u4e8c","\u9031\u4e09","\u9031\u56db","\u9031\u4e94","\u9031\u516d"];
+
+    /* ========== Session ========== */
+    var currentUser = null;
+    var currentToken = null;
+    try { currentToken = localStorage.getItem("nail_token_v2"); } catch(e) {}
+
+    /* ========== Toast ========== */
+    function toast(msg, isError) {
+      var c = document.getElementById("toast-container");
+      var el = document.createElement("div");
+      el.className = "toast " + (isError ? "error" : "success");
+      el.textContent = msg;
+      c.appendChild(el);
+      setTimeout(function() { el.remove(); }, 3000);
+    }
+
+    /* ========== Modal ========== */
+    function showModal(html) {
+      document.getElementById("modal-root").innerHTML =
+        '<div class="modal-overlay" id="modal-overlay"><div class="modal">' + html + '</div></div>';
+      document.getElementById("modal-overlay").onclick = function(e) {
+        if (e.target === this) closeModal();
+      };
+    }
+    function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
+
+    /* ========== Auth API ========== */
+    function apiRegister(email, password) {
+      for (var i = 0; i < DB.users.length; i++) {
+        if (DB.users[i].email === email) throw new Error("\u6b64\u4fe1\u7bb1\u5df2\u8a3b\u518a");
+      }
+      var user = { id: makeId(), email: email, passwordHash: simpleHash(password), role: DB.users.length === 0 ? "admin" : "user", createdAt: new Date().toISOString() };
+      DB.users.push(user);
+      saveDB();
+      currentToken = user.id;
+      try { localStorage.setItem("nail_token_v2", user.id); } catch(e) {}
+      return { id: user.id, email: user.email, role: user.role };
+    }
+
+    function apiLogin(email, password) {
+      var h = simpleHash(password);
+      for (var i = 0; i < DB.users.length; i++) {
+        if (DB.users[i].email === email && DB.users[i].passwordHash === h) {
+          var u = DB.users[i];
+          currentToken = u.id;
+          try { localStorage.setItem("nail_token_v2", u.id); } catch(e) {}
+          return { id: u.id, email: u.email, role: u.role };
+        }
+      }
+      throw new Error("\u5e33\u865f\u6216\u5bc6\u78bc\u932f\u8aa4");
+    }
+
+    function apiGetMe() {
+      if (!currentToken) return null;
+      for (var i = 0; i < DB.users.length; i++) {
+        if (DB.users[i].id === currentToken) {
+          var u = DB.users[i];
+          return { id: u.id, email: u.email, role: u.role };
+        }
+      }
+      return null;
+    }
+
+    /* ========== Staff API ========== */
+    function apiAddStaff(name, specialty, avatar) {
+      var s = { id: makeId(), name: name, specialty: specialty, avatar: avatar || "\ud83d\udc85" };
+      DB.staff.push(s);
+      saveDB();
+      return s;
+    }
+
+    function apiEditStaff(id, name, specialty, avatar) {
+      for (var i = 0; i < DB.staff.length; i++) {
+        if (DB.staff[i].id === id) {
+          DB.staff[i].name = name;
+          DB.staff[i].specialty = specialty;
+          DB.staff[i].avatar = avatar;
+          saveDB();
+          return DB.staff[i];
+        }
+      }
+      throw new Error("\u627e\u4e0d\u5230\u7f8e\u7532\u5e2b");
+    }
+
+    function apiDeleteStaff(id) {
+      DB.staff = DB.staff.filter(function(s) { return s.id !== id; });
+      delete DB.schedules[id];
+      saveDB();
+    }
+
+    /* ========== Schedule API ========== */
+    // schedules: { staffId: { "2026-03-10": ["11:00","13:00"], ... } }
+    // key = date string "YYYY-MM-DD"
+    function apiGetSchedule(staffId) {
+      return DB.schedules[staffId] || {};
+    }
+
+    function apiSetDaySchedule(staffId, dateStr, times) {
+      if (!DB.schedules[staffId]) DB.schedules[staffId] = {};
+      if (times.length === 0) {
+        delete DB.schedules[staffId][dateStr];
+      } else {
+        DB.schedules[staffId][dateStr] = times;
+      }
+      saveDB();
+    }
+
+    function apiGetScheduledDatesForMonth(staffId, year, month) {
+      var schedule = DB.schedules[staffId] || {};
+      var prefix = year + "-" + String(month + 1).padStart(2, "0") + "-";
+      var dates = [];
+      for (var key in schedule) {
+        if (key.indexOf(prefix) === 0 && schedule[key].length > 0) {
+          dates.push(key);
+        }
+      }
+      return dates;
+    }
+
+    /* ========== Booking API ========== */
+    function apiGetAvailableSlots(staffId, dateStr) {
+      var schedule = DB.schedules[staffId] || {};
+      var available = schedule[dateStr] || [];
+      var booked = [];
+      for (var i = 0; i < DB.appointments.length; i++) {
+        var a = DB.appointments[i];
+        if (a.staffId === staffId && a.date === dateStr && a.status !== "cancelled") {
+          booked.push(a.time);
+        }
+      }
+      return { available: available, booked: booked };
+    }
+
+    function apiCreateAppointment(staffId, date, time) {
+      var user = apiGetMe();
+      if (!user) throw new Error("\u8acb\u5148\u767b\u5165");
+      var staff = null;
+      for (var i = 0; i < DB.staff.length; i++) { if (DB.staff[i].id === staffId) { staff = DB.staff[i]; break; } }
+      if (!staff) throw new Error("\u7121\u6548\u7684\u7f8e\u7532\u5e2b");
+      // check conflict
+      for (var i = 0; i < DB.appointments.length; i++) {
+        var a = DB.appointments[i];
+        if (a.staffId === staffId && a.date === date && a.time === time && a.status !== "cancelled") {
+          throw new Error("\u6b64\u6642\u6bb5\u5df2\u88ab\u9810\u7d04");
+        }
+      }
+      var apt = { id: makeId(), userId: user.id, userEmail: user.email, staffId: staff.id, staffName: staff.name, date: date, time: time, status: "pending", createdAt: new Date().toISOString() };
+      DB.appointments.push(apt);
+      saveDB();
+      return apt;
+    }
+
+    function apiCancelAppointment(aptId) {
+      for (var i = 0; i < DB.appointments.length; i++) {
+        if (DB.appointments[i].id === aptId && DB.appointments[i].userId === currentToken) {
+          DB.appointments[i].status = "cancelled";
+          saveDB();
+          return;
+        }
+      }
+      throw new Error("\u627e\u4e0d\u5230\u9810\u7d04");
+    }
+
+    function apiGetMyAppointments() {
+      if (!currentToken) return [];
+      return DB.appointments.filter(function(a) { return a.userId === currentToken; }).sort(function(a,b) { return b.createdAt > a.createdAt ? 1 : -1; });
+    }
+
+    function apiGetAllAppointments() { return DB.appointments.slice(); }
+
+    /* ===================================================================
+       RENDERING
+       =================================================================== */
+
+    /* ---- Auth ---- */
+    function renderAuth(mode) {
+      var app = document.getElementById("app");
+      var isLogin = mode === "login";
+      app.innerHTML =
+        '<div class="card">' +
+        '<h1>' + (isLogin ? "\ud83c\udf38 \u6b61\u8fce\u56de\u4f86" : "\ud83c\udf38 \u5efa\u7acb\u5e33\u865f") + '</h1>' +
+        '<p class="subtitle">\u6f3e\u5f69\u7f8e\u7532\u30fb\u5c08\u5c6c\u65bc\u60a8\u7684\u7cbe\u7dfb\u6642\u5149</p>' +
+        '<form id="auth-form">' +
+          '<div class="form-group"><label>\u96fb\u5b50\u4fe1\u7bb1</label><input type="email" id="f-email" required placeholder="example@mail.com" /></div>' +
+          '<div class="form-group"><label>\u5bc6\u78bc</label><input type="password" id="f-pw" required placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" minlength="6" /></div>' +
+          '<button type="submit" class="btn-full" id="submit-btn">' + (isLogin ? "\u7acb\u5373\u767b\u5165" : "\u8a3b\u518a\u4e26\u52a0\u5165\u6703\u54e1") + '</button>' +
+        '</form>' +
+        '<button class="btn-ghost btn-full" style="margin-top:12px" id="switch-mode">' +
+          (isLogin ? "\u9084\u6c92\u6709\u5e33\u865f\uff1f\u524d\u5f80\u8a3b\u518a" : "\u5df2\u7d93\u6709\u5e33\u865f\u4e86\uff1f\u8fd4\u56de\u767b\u5165") +
+        '</button></div>';
+
+      document.getElementById("switch-mode").onclick = function() { renderAuth(isLogin ? "register" : "login"); };
+      document.getElementById("auth-form").onsubmit = function(e) {
+        e.preventDefault();
+        var email = document.getElementById("f-email").value.trim();
+        var pw = document.getElementById("f-pw").value;
+        try {
+          currentUser = isLogin ? apiLogin(email, pw) : apiRegister(email, pw);
+          toast(isLogin ? "\u767b\u5165\u6210\u529f\uff01" : "\u8a3b\u518a\u6210\u529f\uff01");
+          renderDashboard("book");
+        } catch(err) {
+          toast(err.message, true);
+        }
+      };
+    }
+
+    /* ---- Dashboard ---- */
+    function renderDashboard(tab) {
+      if (!tab) tab = "book";
+      var app = document.getElementById("app");
+      var isAdmin = currentUser && currentUser.role === "admin";
+      var name = currentUser ? currentUser.email.split("@")[0] : "";
+
+      var tabsHtml =
+        '<div class="tab ' + (tab === "book" ? "active" : "") + '" data-tab="book">\u9810\u7d04\u670d\u52d9</div>' +
+        '<div class="tab ' + (tab === "history" ? "active" : "") + '" data-tab="history">\u6211\u7684\u9810\u7d04</div>';
+      if (isAdmin) {
+        tabsHtml +=
+          '<div class="tab ' + (tab === "admin-apt" ? "active" : "") + '" data-tab="admin-apt">\u5168\u90e8\u9810\u7d04</div>' +
+          '<div class="tab ' + (tab === "admin-staff" ? "active" : "") + '" data-tab="admin-staff">\u7f8e\u7532\u5e2b\u7ba1\u7406</div>' +
+          '<div class="tab ' + (tab === "admin-schedule" ? "active" : "") + '" data-tab="admin-schedule">\u6392\u73ed\u7ba1\u7406</div>';
+      }
+
+      app.innerHTML =
+        '<div class="card">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">' +
+          '<div style="font-weight:700">Hi, ' + name + ' \ud83d\udc4b' + (isAdmin ? ' <span style="font-size:0.7rem;background:var(--primary-dark);color:white;padding:2px 8px;border-radius:10px;">Admin</span>' : '') + '</div>' +
+          '<a href="javascript:void(0)" id="logout" style="font-size:0.8rem;color:var(--text-muted)">\u767b\u51fa</a>' +
+        '</div>' +
+        '<div class="nav-tabs">' + tabsHtml + '</div>' +
+        '<div id="dashboard-content"></div></div>';
+
+      document.getElementById("logout").onclick = function() {
+        currentUser = null; currentToken = null;
+        try { localStorage.removeItem("nail_token_v2"); } catch(e) {}
+        renderAuth("login");
+      };
+      var tabs = document.querySelectorAll(".tab");
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].onclick = function() { renderDashboard(this.getAttribute("data-tab")); };
+      }
+
+      var content = document.getElementById("dashboard-content");
+      if (tab === "book") renderBooking(content);
+      else if (tab === "history") renderHistory(content);
+      else if (tab === "admin-apt") renderAdminApt(content);
+      else if (tab === "admin-staff") renderAdminStaff(content);
+      else if (tab === "admin-schedule") renderAdminSchedule(content);
+    }
+
+    /* ---- Booking (consumer) ---- */
+    var bookCalState = { year: 0, month: 0 };
+
+    function renderBooking(container) {
+      if (DB.staff.length === 0) {
+        container.innerHTML = '<p class="empty-msg">\u76ee\u524d\u5c1a\u7121\u7f8e\u7532\u5e2b\uff0c\u8acb\u7a0d\u5f8c\u518d\u8a66</p>';
+        return;
+      }
+      var staffHtml = "";
+      for (var i = 0; i < DB.staff.length; i++) {
+        var s = DB.staff[i];
+        staffHtml += '<div class="staff-card" data-id="' + s.id + '"><div class="staff-avatar">' + s.avatar + '</div><div class="staff-name">' + s.name + '</div><div class="staff-specialty">' + s.specialty + '</div></div>';
+      }
+
+      var now = new Date();
+      if (!bookCalState.year) { bookCalState.year = now.getFullYear(); bookCalState.month = now.getMonth(); }
+
+      container.innerHTML =
+        '<div id="step-1">' +
+          '<label style="margin-bottom:12px">1. \u9078\u64c7\u7f8e\u7532\u5e2b</label>' +
+          '<div class="staff-grid">' + staffHtml + '</div>' +
+        '</div>' +
+        '<div id="step-2" style="display:none">' +
+          '<label style="margin-bottom:12px">2. \u9078\u64c7\u65e5\u671f</label>' +
+          '<div id="book-calendar"></div>' +
+          '<div id="step-3" style="display:none;margin-top:18px;">' +
+            '<label>3. \u9078\u64c7\u6642\u6bb5</label>' +
+            '<div id="time-slots-area"></div>' +
+          '</div>' +
+          '<button id="confirm-booking" class="btn-full" style="margin-top:20px" disabled>\u78ba\u8a8d\u9810\u7d04</button>' +
+          '<button class="btn-ghost btn-full" style="margin-top:8px" id="back-to-staff">\u56de\u4e0a\u4e00\u6b65</button>' +
+        '</div>';
+
+      var bk = { staffId: "", date: "", time: "" };
+      var step1 = document.getElementById("step-1");
+      var step2 = document.getElementById("step-2");
+      var confirmBtn = document.getElementById("confirm-booking");
+
+      var cards = document.querySelectorAll(".staff-card");
+      for (var i = 0; i < cards.length; i++) {
+        cards[i].onclick = function() {
+          bk.staffId = this.getAttribute("data-id");
+          bk.date = ""; bk.time = "";
+          confirmBtn.disabled = true;
+          document.getElementById("step-3").style.display = "none";
+          var all = document.querySelectorAll(".staff-card");
+          for (var j = 0; j < all.length; j++) all[j].classList.remove("active");
+          this.classList.add("active");
+          step1.style.display = "none";
+          step2.style.display = "block";
+          renderBookCalendar(bk, confirmBtn);
+        };
+      }
+
+      document.getElementById("back-to-staff").onclick = function() {
+        step1.style.display = "block"; step2.style.display = "none";
+      };
+
+      confirmBtn.onclick = function() {
+        try {
+          apiCreateAppointment(bk.staffId, bk.date, bk.time);
+          toast("\u9810\u7d04\u6210\u529f\uff01\u6211\u5011\u5c07\u4fdd\u7559\u60a8\u7684\u6642\u6bb5 \u2728");
+          renderDashboard("history");
+        } catch(err) { toast(err.message, true); }
+      };
+    }
+
+    function renderBookCalendar(bk, confirmBtn) {
+      var cal = document.getElementById("book-calendar");
+      var y = bookCalState.year, m = bookCalState.month;
+      var monthNames = ["1\u6708","2\u6708","3\u6708","4\u6708","5\u6708","6\u6708","7\u6708","8\u6708","9\u6708","10\u6708","11\u6708","12\u6708"];
+      var scheduledDates = apiGetScheduledDatesForMonth(bk.staffId, y, m);
+
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+        '<button class="btn-sm btn-ghost" id="book-cal-prev">&lt;</button>' +
+        '<div style="font-weight:700;font-size:1rem;">' + y + '\u5e74 ' + monthNames[m] + '</div>' +
+        '<button class="btn-sm btn-ghost" id="book-cal-next">&gt;</button>' +
+      '</div>';
+
+      html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-bottom:12px;">';
+      var dayHeaders = ["\u65e5","\u4e00","\u4e8c","\u4e09","\u56db","\u4e94","\u516d"];
+      for (var i = 0; i < 7; i++) {
+        html += '<div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);padding:6px 0;">' + dayHeaders[i] + '</div>';
+      }
+
+      var firstDay = new Date(y, m, 1).getDay();
+      var daysInMonth = new Date(y, m + 1, 0).getDate();
+      var today = new Date(); today.setHours(0,0,0,0);
+
+      for (var i = 0; i < firstDay; i++) html += '<div></div>';
+
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+        var thisDate = new Date(y, m, d);
+        var isPast = thisDate < today;
+        var hasSchedule = scheduledDates.indexOf(dateStr) !== -1;
+        var isSelected = bk.date === dateStr;
+
+        // check if all slots are fully booked
+        var fullyBooked = false;
+        if (hasSchedule && !isPast) {
+          var slotInfo = apiGetAvailableSlots(bk.staffId, dateStr);
+          fullyBooked = slotInfo.available.length > 0 && slotInfo.booked.length >= slotInfo.available.length;
+        }
+
+        var cellStyle = "padding:8px 2px;border-radius:10px;font-size:0.85rem;transition:0.2s;border:2px solid transparent;";
+        if (isPast) {
+          cellStyle += "color:#ccc;cursor:default;";
+        } else if (isSelected) {
+          cellStyle += "background:var(--primary-dark);color:white;font-weight:700;cursor:pointer;border-color:var(--text);";
+        } else if (fullyBooked) {
+          cellStyle += "background:#f5f5f5;color:#bbb;cursor:not-allowed;text-decoration:line-through;";
+        } else if (hasSchedule) {
+          cellStyle += "background:var(--primary);color:var(--text);font-weight:700;cursor:pointer;";
+        } else {
+          cellStyle += "background:#f9f9f9;color:#ccc;cursor:default;";
+        }
+
+        var canClick = !isPast && hasSchedule && !fullyBooked;
+        html += '<div class="book-cal-day" data-date="' + dateStr + '" data-can="' + (canClick ? "1" : "0") + '" style="' + cellStyle + '">' + d + '</div>';
+      }
+      html += '</div>';
+
+      // legend
+      html += '<div style="display:flex;flex-wrap:wrap;gap:12px;font-size:0.7rem;color:var(--text-muted);">' +
+        '<div><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--primary);vertical-align:middle;margin-right:3px;"></span>\u53ef\u9810\u7d04</div>' +
+        '<div><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--primary-dark);vertical-align:middle;margin-right:3px;"></span>\u5df2\u9078\u64c7</div>' +
+        '<div><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#f5f5f5;border:1px solid #ddd;vertical-align:middle;margin-right:3px;"></span>\u5df2\u7d04\u6eff / \u672a\u958b\u653e</div>' +
+      '</div>';
+
+      cal.innerHTML = html;
+
+      // nav
+      document.getElementById("book-cal-prev").onclick = function() {
+        bookCalState.month--;
+        if (bookCalState.month < 0) { bookCalState.month = 11; bookCalState.year--; }
+        bk.date = ""; bk.time = ""; confirmBtn.disabled = true;
+        document.getElementById("step-3").style.display = "none";
+        renderBookCalendar(bk, confirmBtn);
+      };
+      document.getElementById("book-cal-next").onclick = function() {
+        bookCalState.month++;
+        if (bookCalState.month > 11) { bookCalState.month = 0; bookCalState.year++; }
+        bk.date = ""; bk.time = ""; confirmBtn.disabled = true;
+        document.getElementById("step-3").style.display = "none";
+        renderBookCalendar(bk, confirmBtn);
+      };
+
+      // day click
+      var days = cal.querySelectorAll(".book-cal-day");
+      for (var i = 0; i < days.length; i++) {
+        days[i].onclick = function() {
+          if (this.getAttribute("data-can") !== "1") return;
+          bk.date = this.getAttribute("data-date");
+          bk.time = "";
+          confirmBtn.disabled = true;
+          renderBookCalendar(bk, confirmBtn);
+          renderBookTimeSlots(bk, confirmBtn);
+        };
+      }
+
+      // if a date is already selected, show time slots
+      if (bk.date) renderBookTimeSlots(bk, confirmBtn);
+    }
+
+    function renderBookTimeSlots(bk, confirmBtn) {
+      var step3 = document.getElementById("step-3");
+      var area = document.getElementById("time-slots-area");
+      var slots = apiGetAvailableSlots(bk.staffId, bk.date);
+
+      if (slots.available.length === 0) {
+        area.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:10px 0;">\u8a72\u7f8e\u7532\u5e2b\u7576\u5929\u672a\u6392\u73ed</p>';
+        step3.style.display = "block";
+        return;
+      }
+
+      var parts = bk.date.split("-");
+      var dayOfWeek = WEEKDAYS[new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])).getDay()];
+      var dateLabel = parseInt(parts[1]) + "/" + parseInt(parts[2]) + " (" + dayOfWeek + ")";
+
+      var html = '<p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">' + dateLabel + ' \u53ef\u9078\u6642\u6bb5</p>';
+      html += '<div class="time-grid">';
+      for (var i = 0; i < slots.available.length; i++) {
+        var t = slots.available[i];
+        var isBooked = slots.booked.indexOf(t) !== -1;
+        var isSelected = bk.time === t;
+        var cls = "time-slot";
+        if (isBooked) cls += " booked";
+        else if (isSelected) cls += " active";
+        html += '<div class="' + cls + '" data-time="' + t + '">' + t + (isBooked ? ' \u5df2\u7d04' : '') + '</div>';
+      }
+      html += '</div>';
+      area.innerHTML = html;
+      step3.style.display = "block";
+
+      var tslots = area.querySelectorAll(".time-slot:not(.booked)");
+      for (var i = 0; i < tslots.length; i++) {
+        tslots[i].onclick = function() {
+          var all = area.querySelectorAll(".time-slot");
+          for (var j = 0; j < all.length; j++) all[j].classList.remove("active");
+          this.classList.add("active");
+          bk.time = this.getAttribute("data-time");
+          confirmBtn.disabled = false;
+        };
+      }
+    }
+
+    /* ---- History ---- */
+    function renderHistory(container) {
+      var apts = apiGetMyAppointments();
+      if (apts.length === 0) { container.innerHTML = '<p class="empty-msg">\u5c1a\u7121\u9810\u7d04\u7d00\u9304</p>'; return; }
+      var html = "";
+      for (var i = 0; i < apts.length; i++) {
+        var a = apts[i];
+        var isCancelled = a.status === "cancelled";
+        var statusText = isCancelled ? "\u5df2\u53d6\u6d88" : "\u5f85\u670d\u52d9";
+        var statusStyle = isCancelled ? "background:#f5f5f5;color:#999;" : "";
+        var cancelBtn = isCancelled ? "" : '<button class="btn-sm btn-danger cancel-apt-btn" data-id="' + a.id + '" data-date="' + a.date + ' ' + a.time + '" style="margin-left:10px;">\u53d6\u6d88</button>';
+        html +=
+          '<div class="apt-card"' + (isCancelled ? ' style="opacity:0.6;"' : '') + '>' +
+            '<div class="apt-info">' +
+              '<div class="apt-date">' + a.date + ' ' + a.time + '</div>' +
+              '<div style="font-size:0.85rem">\u7f8e\u7532\u5e2b\uff1a' + a.staffName + '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;">' +
+              '<div class="apt-status" style="' + statusStyle + '">' + statusText + '</div>' +
+              cancelBtn +
+            '</div>' +
+          '</div>';
+      }
+      container.innerHTML = html;
+
+      var cancelBtns = container.querySelectorAll(".cancel-apt-btn");
+      for (var i = 0; i < cancelBtns.length; i++) {
+        cancelBtns[i].onclick = function() {
+          var aptId = this.getAttribute("data-id");
+          var aptDate = this.getAttribute("data-date");
+          if (confirm("\u78ba\u5b9a\u8981\u53d6\u6d88 " + aptDate + " \u7684\u9810\u7d04\u55ce\uff1f")) {
+            try {
+              apiCancelAppointment(aptId);
+              toast("\u5df2\u53d6\u6d88\u9810\u7d04");
+              renderDashboard("history");
+            } catch(err) { toast(err.message, true); }
+          }
+        };
+      }
+    }
+
+    /* ---- Admin: All Appointments ---- */
+    function renderAdminApt(container) {
+      var apts = apiGetAllAppointments();
+      var html = '<div style="margin-bottom:12px;font-size:0.8rem;color:var(--text-muted)">\u5171 ' + apts.length + ' \u7b46\u9810\u7d04</div>';
+      if (apts.length === 0) { html += '<p class="empty-msg">\u5c1a\u7121\u9810\u7d04</p>'; }
+      for (var i = 0; i < apts.length; i++) {
+        var a = apts[i];
+        html += '<div class="apt-card" style="border-left:4px solid var(--primary-dark)"><div class="apt-info"><div class="apt-date">' + a.date + ' ' + a.time + '</div><div style="font-size:0.85rem">\u5ba2\u6236\uff1a' + a.userEmail + '</div><div style="font-size:0.85rem">\u7f8e\u7532\u5e2b\uff1a' + a.staffName + '</div></div></div>';
+      }
+      container.innerHTML = html;
+    }
+
+    /* ---- Admin: Staff Management ---- */
+    function renderAdminStaff(container) {
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h2 style="margin:0">\u7f8e\u7532\u5e2b\u5217\u8868</h2><button class="btn-sm btn-success" id="add-staff-btn">+ \u65b0\u589e\u7f8e\u7532\u5e2b</button></div>';
+
+      if (DB.staff.length === 0) {
+        html += '<p class="empty-msg">\u5c1a\u672a\u65b0\u589e\u7f8e\u7532\u5e2b</p>';
+      }
+      for (var i = 0; i < DB.staff.length; i++) {
+        var s = DB.staff[i];
+        html +=
+          '<div class="admin-staff-item">' +
+            '<div class="admin-staff-info">' +
+              '<span style="font-size:1.5rem">' + s.avatar + '</span>' +
+              '<div><div style="font-weight:700">' + s.name + '</div><div style="font-size:0.8rem;color:var(--text-muted)">' + s.specialty + '</div></div>' +
+            '</div>' +
+            '<div class="admin-staff-actions">' +
+              '<button class="btn-sm btn-ghost edit-staff-btn" data-id="' + s.id + '">\u7de8\u8f2f</button>' +
+              '<button class="btn-sm btn-danger del-staff-btn" data-id="' + s.id + '" data-name="' + s.name + '">\u522a\u9664</button>' +
+            '</div>' +
+          '</div>';
+      }
+      container.innerHTML = html;
+
+      document.getElementById("add-staff-btn").onclick = function() { showStaffModal(null); };
+
+      var editBtns = container.querySelectorAll(".edit-staff-btn");
+      for (var i = 0; i < editBtns.length; i++) {
+        editBtns[i].onclick = function() {
+          var sid = this.getAttribute("data-id");
+          var staff = null;
+          for (var j = 0; j < DB.staff.length; j++) { if (DB.staff[j].id === sid) staff = DB.staff[j]; }
+          if (staff) showStaffModal(staff);
+        };
+      }
+
+      var delBtns = container.querySelectorAll(".del-staff-btn");
+      for (var i = 0; i < delBtns.length; i++) {
+        delBtns[i].onclick = function() {
+          var sid = this.getAttribute("data-id");
+          var sname = this.getAttribute("data-name");
+          if (confirm("\u78ba\u5b9a\u8981\u522a\u9664\u300c" + sname + "\u300d\u55ce\uff1f")) {
+            apiDeleteStaff(sid);
+            toast("\u5df2\u522a\u9664 " + sname);
+            renderDashboard("admin-staff");
+          }
+        };
+      }
+    }
+
+    function showStaffModal(staff) {
+      var isEdit = !!staff;
+      var avatarHtml = '';
+      for (var i = 0; i < AVATARS.length; i++) {
+        var sel = staff && staff.avatar === AVATARS[i] ? ' on' : (!staff && i === 0 ? ' on' : '');
+        avatarHtml += '<div class="chip avatar-chip' + sel + '" data-avatar="' + AVATARS[i] + '">' + AVATARS[i] + '</div>';
+      }
+
+      showModal(
+        '<h2>' + (isEdit ? "\u7de8\u8f2f\u7f8e\u7532\u5e2b" : "\u65b0\u589e\u7f8e\u7532\u5e2b") + '</h2>' +
+        '<form id="staff-form">' +
+          '<div class="form-group"><label>\u59d3\u540d</label><input id="sf-name" required value="' + (staff ? staff.name : "") + '" placeholder="\u4f8b\uff1a\u5c0f\u7f8e (May)" /></div>' +
+          '<div class="form-group"><label>\u5c08\u9577</label><input id="sf-spec" required value="' + (staff ? staff.specialty : "") + '" placeholder="\u4f8b\uff1a\u6cd5\u5f0f\u5149\u7642" /></div>' +
+          '<div class="form-group"><label>\u9078\u64c7\u5716\u793a</label><div class="chip-grid" id="avatar-grid">' + avatarHtml + '</div></div>' +
+          '<button type="submit" class="btn-full">' + (isEdit ? "\u5132\u5b58\u4fee\u6539" : "\u65b0\u589e") + '</button>' +
+          '<button type="button" class="btn-ghost btn-full" style="margin-top:8px" id="cancel-staff-modal">\u53d6\u6d88</button>' +
+        '</form>'
+      );
+
+      var selectedAvatar = staff ? staff.avatar : AVATARS[0];
+      var chips = document.querySelectorAll(".avatar-chip");
+      for (var i = 0; i < chips.length; i++) {
+        chips[i].onclick = function() {
+          for (var j = 0; j < chips.length; j++) chips[j].classList.remove("on");
+          this.classList.add("on");
+          selectedAvatar = this.getAttribute("data-avatar");
+        };
+      }
+
+      document.getElementById("cancel-staff-modal").onclick = closeModal;
+      document.getElementById("staff-form").onsubmit = function(e) {
+        e.preventDefault();
+        var name = document.getElementById("sf-name").value.trim();
+        var spec = document.getElementById("sf-spec").value.trim();
+        try {
+          if (isEdit) { apiEditStaff(staff.id, name, spec, selectedAvatar); toast("\u5df2\u66f4\u65b0 " + name); }
+          else { apiAddStaff(name, spec, selectedAvatar); toast("\u5df2\u65b0\u589e " + name); }
+          closeModal();
+          renderDashboard("admin-staff");
+        } catch(err) { toast(err.message, true); }
+      };
+    }
+
+    /* ---- Admin: Schedule Management ---- */
+    var scheduleState = { staffId: "", year: 0, month: 0 };
+
+    function renderAdminSchedule(container) {
+      if (DB.staff.length === 0) {
+        container.innerHTML = '<p class="empty-msg">\u8acb\u5148\u65b0\u589e\u7f8e\u7532\u5e2b</p>';
+        return;
+      }
+
+      var now = new Date();
+      if (!scheduleState.year) { scheduleState.year = now.getFullYear(); scheduleState.month = now.getMonth(); }
+      if (!scheduleState.staffId) scheduleState.staffId = DB.staff[0].id;
+
+      var html = '<h2>\u6392\u73ed\u7ba1\u7406</h2>';
+      html += '<div class="form-group"><label>\u9078\u64c7\u7f8e\u7532\u5e2b</label><select id="schedule-staff-select">';
+      for (var i = 0; i < DB.staff.length; i++) {
+        var selected = DB.staff[i].id === scheduleState.staffId ? " selected" : "";
+        html += '<option value="' + DB.staff[i].id + '"' + selected + '>' + DB.staff[i].avatar + ' ' + DB.staff[i].name + '</option>';
+      }
+      html += '</select></div><hr class="section-divider"><div id="schedule-calendar"></div>';
+      container.innerHTML = html;
+
+      document.getElementById("schedule-staff-select").onchange = function() {
+        scheduleState.staffId = this.value;
+        renderCalendar();
+      };
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      var cal = document.getElementById("schedule-calendar");
+      var y = scheduleState.year, m = scheduleState.month;
+      var monthNames = ["1\u6708","2\u6708","3\u6708","4\u6708","5\u6708","6\u6708","7\u6708","8\u6708","9\u6708","10\u6708","11\u6708","12\u6708"];
+
+      // get scheduled dates for highlight
+      var scheduledDates = apiGetScheduledDatesForMonth(scheduleState.staffId, y, m);
+
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">' +
+        '<button class="btn-sm btn-ghost" id="cal-prev">&lt;</button>' +
+        '<div style="font-weight:700;font-size:1rem;">' + y + '\u5e74 ' + monthNames[m] + '</div>' +
+        '<button class="btn-sm btn-ghost" id="cal-next">&gt;</button>' +
+      '</div>';
+
+      // calendar grid
+      html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-bottom:15px;">';
+      var dayHeaders = ["\u65e5","\u4e00","\u4e8c","\u4e09","\u56db","\u4e94","\u516d"];
+      for (var i = 0; i < 7; i++) {
+        html += '<div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);padding:6px 0;">' + dayHeaders[i] + '</div>';
+      }
+
+      var firstDay = new Date(y, m, 1).getDay();
+      var daysInMonth = new Date(y, m + 1, 0).getDate();
+      var today = new Date(); today.setHours(0,0,0,0);
+
+      // empty cells before first day
+      for (var i = 0; i < firstDay; i++) {
+        html += '<div></div>';
+      }
+
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+        var thisDate = new Date(y, m, d);
+        var isPast = thisDate < today;
+        var hasSchedule = scheduledDates.indexOf(dateStr) !== -1;
+
+        var cellStyle = "padding:8px 2px;border-radius:10px;font-size:0.85rem;cursor:pointer;transition:0.2s;border:2px solid transparent;";
+        if (isPast) {
+          cellStyle += "color:#ccc;cursor:default;";
+        } else if (hasSchedule) {
+          cellStyle += "background:var(--primary-dark);color:white;font-weight:700;";
+        } else {
+          cellStyle += "background:#f9f9f9;";
+        }
+
+        html += '<div class="cal-day" data-date="' + dateStr + '" data-past="' + (isPast ? "1" : "0") + '" style="' + cellStyle + '">' + d + '</div>';
+      }
+      html += '</div>';
+
+      // legend
+      html += '<div style="display:flex;gap:15px;font-size:0.75rem;color:var(--text-muted);margin-bottom:10px;">' +
+        '<div><span style="display:inline-block;width:12px;height:12px;border-radius:4px;background:var(--primary-dark);vertical-align:middle;margin-right:4px;"></span>\u5df2\u6392\u73ed</div>' +
+        '<div><span style="display:inline-block;width:12px;height:12px;border-radius:4px;background:#f9f9f9;border:1px solid #ddd;vertical-align:middle;margin-right:4px;"></span>\u672a\u6392\u73ed</div>' +
+      '</div>';
+      html += '<p style="font-size:0.8rem;color:var(--text-muted);">\u9ede\u64ca\u65e5\u671f\u4f86\u8a2d\u5b9a\u6642\u6bb5</p>';
+
+      cal.innerHTML = html;
+
+      // bind navigation
+      document.getElementById("cal-prev").onclick = function() {
+        scheduleState.month--;
+        if (scheduleState.month < 0) { scheduleState.month = 11; scheduleState.year--; }
+        renderCalendar();
+      };
+      document.getElementById("cal-next").onclick = function() {
+        scheduleState.month++;
+        if (scheduleState.month > 11) { scheduleState.month = 0; scheduleState.year++; }
+        renderCalendar();
+      };
+
+      // bind day clicks
+      var days = cal.querySelectorAll(".cal-day");
+      for (var i = 0; i < days.length; i++) {
+        days[i].onclick = function() {
+          if (this.getAttribute("data-past") === "1") return;
+          showDayTimeModal(scheduleState.staffId, this.getAttribute("data-date"));
+        };
+      }
+    }
+
+    function showDayTimeModal(staffId, dateStr) {
+      var schedule = apiGetSchedule(staffId);
+      var currentTimes = schedule[dateStr] || [];
+      var staffName = "";
+      for (var i = 0; i < DB.staff.length; i++) { if (DB.staff[i].id === staffId) staffName = DB.staff[i].name; }
+
+      // format date for display
+      var parts = dateStr.split("-");
+      var dayOfWeek = WEEKDAYS[new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])).getDay()];
+      var displayDate = parts[0] + "/" + parseInt(parts[1]) + "/" + parseInt(parts[2]) + " (" + dayOfWeek + ")";
+
+      var chipsHtml = '';
+      for (var i = 0; i < ALL_TIMES.length; i++) {
+        var on = currentTimes.indexOf(ALL_TIMES[i]) !== -1;
+        chipsHtml += '<div class="chip time-chip' + (on ? ' on' : '') + '" data-time="' + ALL_TIMES[i] + '">' + ALL_TIMES[i] + '</div>';
+      }
+
+      var allOn = currentTimes.length === ALL_TIMES.length;
+
+      showModal(
+        '<h2>' + displayDate + '</h2>' +
+        '<p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:15px;">' + staffName + ' \u7684\u53ef\u670d\u52d9\u6642\u6bb5</p>' +
+        '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
+          '<button class="btn-sm btn-ghost" id="modal-select-all">' + (allOn ? "\u5168\u90e8\u53d6\u6d88" : "\u5168\u9078") + '</button>' +
+          '<button class="btn-sm btn-danger" id="modal-clear-day">\u6e05\u9664\u7576\u5929\u6392\u73ed</button>' +
+        '</div>' +
+        '<div class="chip-grid" id="modal-time-chips" style="margin-bottom:20px;">' + chipsHtml + '</div>' +
+        '<button class="btn-full" id="modal-done">\u5b8c\u6210</button>'
+      );
+
+      // bind time chip clicks
+      var chips = document.querySelectorAll("#modal-time-chips .time-chip");
+      for (var i = 0; i < chips.length; i++) {
+        chips[i].onclick = function() {
+          this.classList.toggle("on");
+          saveDayTimesFromModal(staffId, dateStr);
+        };
+      }
+
+      document.getElementById("modal-select-all").onclick = function() {
+        var chips = document.querySelectorAll("#modal-time-chips .time-chip");
+        var anyOff = false;
+        for (var i = 0; i < chips.length; i++) { if (!chips[i].classList.contains("on")) anyOff = true; }
+        for (var i = 0; i < chips.length; i++) {
+          if (anyOff) chips[i].classList.add("on");
+          else chips[i].classList.remove("on");
+        }
+        saveDayTimesFromModal(staffId, dateStr);
+        // update button text
+        var newAnyOff = false;
+        var chips2 = document.querySelectorAll("#modal-time-chips .time-chip");
+        for (var i = 0; i < chips2.length; i++) { if (!chips2[i].classList.contains("on")) newAnyOff = true; }
+        this.textContent = newAnyOff ? "\u5168\u9078" : "\u5168\u90e8\u53d6\u6d88";
+      };
+
+      document.getElementById("modal-clear-day").onclick = function() {
+        var chips = document.querySelectorAll("#modal-time-chips .time-chip");
+        for (var i = 0; i < chips.length; i++) chips[i].classList.remove("on");
+        saveDayTimesFromModal(staffId, dateStr);
+        toast("\u5df2\u6e05\u9664\u7576\u5929\u6392\u73ed");
+      };
+
+      document.getElementById("modal-done").onclick = function() {
+        closeModal();
+        renderCalendar();
+      };
+    }
+
+    function saveDayTimesFromModal(staffId, dateStr) {
+      var chips = document.querySelectorAll("#modal-time-chips .time-chip");
+      var times = [];
+      for (var i = 0; i < chips.length; i++) {
+        if (chips[i].classList.contains("on")) {
+          times.push(chips[i].getAttribute("data-time"));
+        }
+      }
+      times.sort();
+      apiSetDaySchedule(staffId, dateStr, times);
+    }
+
+    /* ========== Init ========== */
+    function init() {
+      var user = apiGetMe();
+      if (user) { currentUser = user; renderDashboard("book"); }
+      else { currentToken = null; renderAuth("login"); }
+    }
+
+    window.onerror = function(msg, url, line) { toast("JS Error: " + msg + " (L" + line + ")", true); };
+
+    init();
+  </script>
+</body>
+</html>

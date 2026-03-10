@@ -1,0 +1,16 @@
+[
+  {
+    "id": "3aa0359f-ba6d-43e1-b889-2151dbff2c59",
+    "email": "1111@gmail.com",
+    "passwordHash": "$2a$10$0f9WQ5lTAgWrK0jre9/LIeYZLLfO6rc5uNS1Xu6aKXGG16ND9hHRa",
+    "role": "admin",
+    "createdAt": "2026-03-09T08:52:20.269Z"
+  },
+  {
+    "id": "1c88eabe-e889-4de2-92d9-db77afdc59fb",
+    "email": "2222@gmail.com",
+    "passwordHash": "$2a$10$YtKfZ.I7VWjpUQfpU/UbAesUwB2hBL08opjJAbLVZRP4Ep2OkevFy",
+    "role": "user",
+    "createdAt": "2026-03-10T03:15:10.596Z"
+  }
+]
