@@ -9,7 +9,6 @@ export interface User {
 export interface Staff {
   id: string;
   name: string;
-  specialty: string;
   avatar: string;
 }
 

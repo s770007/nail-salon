@@ -9,9 +9,9 @@ export async function getStaff(req: any, res: Response) {
 }
 
 export async function adminAddStaff(req: any, res: Response) {
-  const { name, specialty, avatar } = req.body;
+  const { name, avatar } = req.body;
   const staff = await readData<Staff>("staff");
-  const newStaff: Staff = { id: randomUUID(), name, specialty, avatar };
+  const newStaff: Staff = { id: randomUUID(), name, avatar };
   staff.push(newStaff);
   await writeData("staff", staff);
   res.status(201).json({ success: true, staff: newStaff });
@@ -19,11 +19,11 @@ export async function adminAddStaff(req: any, res: Response) {
 
 export async function adminUpdateStaff(req: any, res: Response) {
   const { id } = req.params;
-  const { name, specialty, avatar } = req.body;
+  const { name, avatar } = req.body;
   const staff = await readData<Staff>("staff");
   const index = staff.findIndex(s => s.id === id);
   if (index === -1) return res.status(404).json({ success: false, message: "找不到該美甲師" });
-  staff[index] = { ...staff[index], name, specialty, avatar };
+  staff[index] = { ...staff[index], name, avatar };
   await writeData("staff", staff);
   res.json({ success: true, staff: staff[index] });
 }
@@ -61,10 +61,18 @@ export async function adminUpdateSchedule(req: any, res: Response) {
 export async function getScheduledDates(req: any, res: Response) {
   const { staffId } = req.query;
   const schedules = await readData<Schedule>("schedules");
-  const dates = schedules
-    .filter(s => s.staffId === staffId && s.slots.length > 0)
-    .map(s => s.date);
-  res.json({ success: true, dates });
+  const appointments = await readData<Appointment>("appointments");
+  const relevant = schedules.filter(s => s.staffId === staffId && s.slots.length > 0);
+  const dates = relevant.map(s => s.date);
+  const slotsMap: Record<string, string[]> = {};
+  relevant.forEach(s => {
+    const booked = appointments
+      .filter(a => a.staffId === staffId && a.date === s.date && a.status !== "cancelled")
+      .map(a => a.time);
+    const available = s.slots.filter(t => !booked.includes(t));
+    if (available.length > 0) slotsMap[s.date] = available;
+  });
+  res.json({ success: true, dates, slotsMap });
 }
 
 export async function getAvailableSlots(req: any, res: Response) {

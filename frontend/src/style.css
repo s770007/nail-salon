@@ -102,10 +102,23 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
 .calendar-day-header { font-size: 0.8rem; font-weight: 600; color: #999; padding: 10px 0; }
-.calendar-day { 
-  aspect-ratio: 1; display: flex; align-items: center; justify-content: center; 
+.calendar-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
   border-radius: 12px; cursor: pointer; font-size: 0.95rem; font-weight: 500;
   transition: 0.2s; position: relative;
+}
+.calendar-container.schedule-mode .calendar-day {
+  aspect-ratio: unset; min-height: 72px; flex-direction: column;
+  align-items: center; justify-content: flex-start; padding: 6px 2px; gap: 2px;
+}
+.calendar-day-num { line-height: 1.6; }
+.schedule-slots-preview {
+  display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%;
+}
+.schedule-slot-chip {
+  font-size: 0.55rem; font-weight: 600; color: var(--primary-dark);
+  background: var(--primary-light); border-radius: 4px;
+  padding: 1px 3px; line-height: 1.4; white-space: nowrap;
 }
 .calendar-day:not(.disabled):hover { background: var(--primary-light); color: var(--primary-dark); }
 .calendar-day.selected { background: var(--primary-dark) !important; color: white !important; font-weight: 700; }
