@@ -74,3 +74,21 @@ export async function handleMe(req: any, res: Response) {
   if (!user) return res.status(404).json({ success: false, message: "找不到使用者" });
   res.json({ success: true, user: { id: user.id, email: user.email, role: user.role } });
 }
+
+export async function adminGetUsers(req: any, res: Response) {
+  const users = await readData<User>("users");
+  res.json({ success: true, users: users.map(u => ({ id: u.id, email: u.email, role: u.role, createdAt: u.createdAt })) });
+}
+
+export async function adminUpdateUserRole(req: any, res: Response) {
+  const { id } = req.params;
+  const { role } = req.body;
+  if (role !== "admin" && role !== "user") return res.status(400).json({ success: false, message: "無效的角色" });
+  if (id === req.userId) return res.status(400).json({ success: false, message: "無法修改自己的權限" });
+  const users = await readData<User>("users");
+  const index = users.findIndex(u => u.id === id);
+  if (index === -1) return res.status(404).json({ success: false, message: "找不到使用者" });
+  users[index].role = role;
+  await writeData("users", users);
+  res.json({ success: true });
+}

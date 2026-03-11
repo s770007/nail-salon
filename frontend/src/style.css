@@ -65,11 +65,9 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-success { background: #4caf50; }
 
 /* Navigation Tabs */
-.nav-tabs { 
-  display: flex; gap: 8px; margin-bottom: 30px; padding-bottom: 15px; 
-  overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+.nav-tabs {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; padding-bottom: 15px;
 }
-.nav-tabs::-webkit-scrollbar { display: none; }
 .tab { 
   cursor: pointer; padding: 10px 20px; border-radius: 15px; 
   font-weight: 600; font-size: 0.95rem; color: #666; transition: 0.3s;

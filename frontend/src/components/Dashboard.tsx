@@ -4,8 +4,9 @@ import History from "./History";
 import AdminView from "./AdminView";
 import StaffManagement from "./StaffManagement";
 import ScheduleManagement from "./ScheduleManagement";
+import UserManagement from "./UserManagement";
 
-type Tab = "book" | "history" | "admin" | "staff" | "schedule";
+type Tab = "book" | "history" | "admin" | "staff" | "schedule" | "users";
 
 interface Props {
   user: any;
@@ -23,6 +24,7 @@ export default function Dashboard({ user, onLogout }: Props) {
       case "admin": return <AdminView />;
       case "staff": return <StaffManagement />;
       case "schedule": return <ScheduleManagement />;
+      case "users": return <UserManagement />;
     }
   };
 
@@ -41,6 +43,7 @@ export default function Dashboard({ user, onLogout }: Props) {
           <div className={`tab ${tab === 'admin' ? 'active' : ''}`} onClick={() => setTab('admin')}>全部預約</div>
           <div className={`tab ${tab === 'staff' ? 'active' : ''}`} onClick={() => setTab('staff')}>美甲師管理</div>
           <div className={`tab ${tab === 'schedule' ? 'active' : ''}`} onClick={() => setTab('schedule')}>排班管理</div>
+          <div className={`tab ${tab === 'users' ? 'active' : ''}`} onClick={() => setTab('users')}>用戶管理</div>
         </>}
       </div>
       <div id="dashboard-content">{renderContent()}</div>

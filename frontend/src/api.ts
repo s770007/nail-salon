@@ -28,5 +28,7 @@ export const api = {
   adminUpdateStaff: (id: string, body: any) => request(`/admin/staff/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   adminDeleteStaff: (id: string) => request(`/admin/staff/${id}`, { method: "DELETE" }),
   adminGetSchedules: () => request("/admin/schedules"),
-  adminUpdateSchedule: (body: any) => request("/admin/schedules", { method: "POST", body: JSON.stringify(body) })
+  adminUpdateSchedule: (body: any) => request("/admin/schedules", { method: "POST", body: JSON.stringify(body) }),
+  adminGetUsers: () => request("/admin/users"),
+  adminUpdateUserRole: (id: string, role: string) => request(`/admin/users/${id}/role`, { method: "PATCH", body: JSON.stringify({ role }) })
 };

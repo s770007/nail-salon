@@ -4,7 +4,11 @@
       "Bash(git add frontend/src/components/AdminView.tsx frontend/src/components/Calendar.tsx frontend/src/style.css)",
       "Bash(git commit:*)",
       "Bash(powershell \"Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess\")",
-      "Bash(powershell \"Stop-Process -Id 29256 -Force\")"
+      "Bash(powershell \"Stop-Process -Id 29256 -Force\")",
+      "Bash(xargs -I{} powershell \"Stop-Process -Id {} -Force -ErrorAction SilentlyContinue\")",
+      "Bash(powershell \"Get-NetTCPConnection -LocalPort 3000 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_-Force }\")",
+      "Bash(powershell \"Get-NetTCPConnection -LocalPort 5173,5174,5175,5176 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalPort, OwningProcess\")",
+      "Bash(grep -c \"UserManagement\\\\|用戶管理\" /c/Users/NaihaoHsu/gitlab/nail-salon/frontend/dist/assets/index-*.js)"
     ]
   }
 }

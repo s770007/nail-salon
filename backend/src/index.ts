@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import { handleLogin, handleRegister, handleMe, authMiddleware, adminMiddleware } from "./auth.js";
+import { handleLogin, handleRegister, handleMe, authMiddleware, adminMiddleware, adminGetUsers, adminUpdateUserRole } from "./auth.js";
 import { getStaff, createAppointment, cancelAppointment, getMyAppointments, adminGetAllAppointments, adminAddStaff, adminUpdateStaff, adminDeleteStaff, adminGetSchedules, adminUpdateSchedule, getAvailableSlots, getScheduledDates } from "./booking.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,6 +34,8 @@ app.put("/api/admin/staff/:id", authMiddleware, adminMiddleware, adminUpdateStaf
 app.delete("/api/admin/staff/:id", authMiddleware, adminMiddleware, adminDeleteStaff);
 app.get("/api/admin/schedules", authMiddleware, adminMiddleware, adminGetSchedules);
 app.post("/api/admin/schedules", authMiddleware, adminMiddleware, adminUpdateSchedule);
+app.get("/api/admin/users", authMiddleware, adminMiddleware, adminGetUsers);
+app.patch("/api/admin/users/:id/role", authMiddleware, adminMiddleware, adminUpdateUserRole);
 
 // 提供前端靜態檔案
 const frontendDist = path.join(__dirname, "../../frontend/dist");
