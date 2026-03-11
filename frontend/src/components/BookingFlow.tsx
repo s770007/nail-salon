@@ -70,11 +70,16 @@ export default function BookingFlow() {
     return (
       <div>
         <label style={{marginBottom:"15px", display:"block"}}>1. 選擇美甲師</label>
-        <div className="staff-grid">
+        <div>
           {staffList.map(s => (
-            <div key={s.id} className={`staff-card ${selectedStaff === s.id ? 'active' : ''}`} onClick={() => handleSelectStaff(s.id)}>
-              <div className="staff-avatar">{s.avatar}</div>
-              <div className="staff-name">{s.name}</div>
+            <div key={s.id} className={`admin-item booking-staff-item ${selectedStaff === s.id ? 'active' : ''}`} onClick={() => handleSelectStaff(s.id)}>
+              <div style={{display:"flex", alignItems:"center", gap:"15px"}}>
+                <div style={{fontSize:"1.5rem"}}>{s.avatar}</div>
+                <div className="admin-info">
+                  <h4>{s.name}</h4>
+                  {s.specialty && <p style={{whiteSpace:"pre-wrap"}}>{s.specialty}</p>}
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -82,8 +87,21 @@ export default function BookingFlow() {
     );
   }
 
+  const selectedStaffInfo = staffList.find(s => s.id === selectedStaff);
+
   return (
     <div>
+      {selectedStaffInfo && (
+        <div className="admin-item" style={{marginBottom:"20px", cursor:"default"}}>
+          <div style={{display:"flex", alignItems:"center", gap:"15px"}}>
+            <div style={{fontSize:"1.5rem"}}>{selectedStaffInfo.avatar}</div>
+            <div className="admin-info">
+              <h4>{selectedStaffInfo.name}</h4>
+              {selectedStaffInfo.specialty && <p style={{whiteSpace:"pre-wrap"}}>{selectedStaffInfo.specialty}</p>}
+            </div>
+          </div>
+        </div>
+      )}
       <label style={{marginBottom:"15px", display:"block"}}>2. 選擇日期</label>
       <Calendar
         calDate={calDate}

@@ -9,9 +9,9 @@ export async function getStaff(req: any, res: Response) {
 }
 
 export async function adminAddStaff(req: any, res: Response) {
-  const { name, avatar } = req.body;
+  const { name, avatar, specialty } = req.body;
   const staff = await readData<Staff>("staff");
-  const newStaff: Staff = { id: randomUUID(), name, avatar };
+  const newStaff: Staff = { id: randomUUID(), name, avatar, specialty };
   staff.push(newStaff);
   await writeData("staff", staff);
   res.status(201).json({ success: true, staff: newStaff });
@@ -19,11 +19,11 @@ export async function adminAddStaff(req: any, res: Response) {
 
 export async function adminUpdateStaff(req: any, res: Response) {
   const { id } = req.params;
-  const { name, avatar } = req.body;
+  const { name, avatar, specialty } = req.body;
   const staff = await readData<Staff>("staff");
   const index = staff.findIndex(s => s.id === id);
   if (index === -1) return res.status(404).json({ success: false, message: "找不到該美甲師" });
-  staff[index] = { ...staff[index], name, avatar };
+  staff[index] = { ...staff[index], name, avatar, specialty };
   await writeData("staff", staff);
   res.json({ success: true, staff: staff[index] });
 }
@@ -127,10 +127,10 @@ export async function createAppointment(req: any, res: Response) {
 
 export async function cancelAppointment(req: any, res: Response) {
   const { id } = req.params;
-  const appointments = await readData<Appointment>("appointments");
-  const index = appointments.findIndex(a => a.id === id && a.userId === req.userId);
-  if (index === -1) return res.status(404).json({ success: false, message: "找不到該預約" });
-  appointments[index].status = "cancelled";
+  let appointments = await readData<Appointment>("appointments");
+  const exists = appointments.find(a => a.id === id && a.userId === req.userId);
+  if (!exists) return res.status(404).json({ success: false, message: "找不到該預約" });
+  appointments = appointments.filter(a => a.id !== id);
   await writeData("appointments", appointments);
   res.json({ success: true });
 }

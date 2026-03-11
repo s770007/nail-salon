@@ -40,7 +40,10 @@ export default function StaffManagement() {
         <div key={s.id} className="admin-item">
           <div style={{display:"flex", alignItems:"center", gap:"15px"}}>
             <div style={{fontSize:"1.5rem"}}>{s.avatar}</div>
-            <div className="admin-info"><h4>{s.name}</h4></div>
+            <div className="admin-info">
+              <h4>{s.name}</h4>
+              {s.specialty && <p style={{whiteSpace:"pre-wrap"}}>{s.specialty}</p>}
+            </div>
           </div>
           <div style={{display:"flex", gap:"8px"}}>
             <button className="btn-sm btn-outline" onClick={() => openEdit(s)}>編輯</button>

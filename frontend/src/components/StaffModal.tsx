@@ -17,12 +17,13 @@ interface Props {
 export default function StaffModal({ staff, onClose, onSaved }: Props) {
   const [name, setName] = useState(staff?.name || "");
   const [avatar, setAvatar] = useState(staff?.avatar || "👩‍🎨");
+  const [specialty, setSpecialty] = useState(staff?.specialty || "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (staff) await api.adminUpdateStaff(staff.id, { name, avatar });
-      else await api.adminAddStaff({ name, avatar });
+      if (staff) await api.adminUpdateStaff(staff.id, { name, avatar, specialty });
+      else await api.adminAddStaff({ name, avatar, specialty });
       onSaved();
     } catch (err: any) {
       alert(err.message);
@@ -37,6 +38,10 @@ export default function StaffModal({ staff, onClose, onSaved }: Props) {
           <div className="form-group">
             <label>姓名</label>
             <input type="text" required value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>專長備註</label>
+            <textarea placeholder="例：法式、凝膠、美甲彩繪..." value={specialty} onChange={e => setSpecialty(e.target.value)} rows={3} style={{resize:"vertical"}} />
           </div>
           <div className="form-group">
             <label>頭像</label>

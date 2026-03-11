@@ -10,6 +10,7 @@ export interface Staff {
   id: string;
   name: string;
   avatar: string;
+  specialty?: string;
 }
 
 export interface Appointment {

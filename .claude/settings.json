@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git add frontend/src/components/AdminView.tsx frontend/src/components/Calendar.tsx frontend/src/style.css)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(powershell \"Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess\")",
+      "Bash(powershell \"Stop-Process -Id 29256 -Force\")"
     ]
   }
 }
