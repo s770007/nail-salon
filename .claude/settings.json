@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add frontend/src/components/AdminView.tsx frontend/src/components/Calendar.tsx frontend/src/style.css)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
