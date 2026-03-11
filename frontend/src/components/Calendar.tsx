@@ -6,9 +6,10 @@ interface Props {
   isDisabled: (dateStr: string) => boolean;
   showLegend?: boolean;
   scheduleSlots?: Record<string, string[]>;
+  markedDates?: string[];
 }
 
-export default function Calendar({ calDate, onChangeMonth, onSelectDate, selectedDate, isDisabled, showLegend, scheduleSlots }: Props) {
+export default function Calendar({ calDate, onChangeMonth, onSelectDate, selectedDate, isDisabled, showLegend, scheduleSlots, markedDates }: Props) {
   const year = calDate.getFullYear();
   const month = calDate.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
@@ -36,6 +37,7 @@ export default function Calendar({ calDate, onChangeMonth, onSelectDate, selecte
           const disabled = isDisabled(dateStr);
           const slots = scheduleSlots?.[dateStr];
           const hasSlots = slots && slots.length > 0;
+          const isMarked = markedDates?.includes(dateStr);
           return (
             <div key={dateStr}
               className={`calendar-day ${disabled ? 'disabled' : ''} ${selectedDate === dateStr ? 'selected' : ''} ${hasSlots ? 'has-schedule' : ''}`}
@@ -47,6 +49,7 @@ export default function Calendar({ calDate, onChangeMonth, onSelectDate, selecte
                   {slots.map(t => <span key={t} className="schedule-slot-chip">{t}</span>)}
                 </div>
               )}
+              {isMarked && <span className="calendar-dot"></span>}
             </div>
           );
         })}
